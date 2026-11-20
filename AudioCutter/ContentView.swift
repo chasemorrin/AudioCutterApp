@@ -6,14 +6,19 @@ struct ContentView: View {
     @StateObject private var player = PlayerController()
     @StateObject private var editor = EditorModel()
     @State private var showImporter = false
+    @State private var showRename = false
+    @State private var renameText = ""
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         NavigationStack {
             screen
-                .navigationTitle(isReady ? (model.current?.name ?? "Audio Cutter") : "Audio Cutter")
+                .navigationTitle("Audio Cutter")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
+                    ToolbarItem(placement: .principal) {
+                        titleView
+                    }
                     ToolbarItem(placement: .topBarLeading) {
                         Button {
                             switchProject()
@@ -34,6 +39,11 @@ struct ContentView: View {
                         .opacity(isReady ? 1 : 0)
                         .keyboardShortcut("z", modifiers: .command)
                     }
+                }
+                .alert("Rename project", isPresented: $showRename) {
+                    TextField("Name", text: $renameText)
+                    Button("Save") { model.rename(renameText) }
+                    Button("Cancel", role: .cancel) {}
                 }
                 .fileImporter(
                     isPresented: $showImporter,
@@ -69,6 +79,31 @@ struct ContentView: View {
                         }
                     }
                 }
+        }
+    }
+
+    /// The title in the middle of the bar. Tap it to rename the open project.
+    @ViewBuilder
+    private var titleView: some View {
+        if isReady {
+            Button {
+                renameText = model.current?.name ?? ""
+                showRename = true
+            } label: {
+                HStack(spacing: 5) {
+                    Text(model.current?.name ?? "Audio Cutter")
+                        .font(.headline)
+                        .lineLimit(1)
+                    Image(systemName: "pencil")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Rename project")
+        } else {
+            Text("Audio Cutter")
+                .font(.headline)
         }
     }
 

@@ -110,6 +110,16 @@ final class RecordingModel: ObservableObject {
         }
     }
 
+    /// Renames the open project (the recording file itself isn't touched).
+    func rename(_ newName: String) {
+        let trimmed = newName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, var info = current else { return }
+        info.name = trimmed
+        ProjectStore.saveInfo(info)
+        current = info
+        refreshProjects()
+    }
+
     /// Back to the project list. Frees the waveform data held in memory.
     func closeProject() {
         fileURL = nil
